@@ -6,7 +6,25 @@
         source,
         audioElement,
         bucketNumber = 5,
+        bucket1low=0,
+        bucket1hi=80,
+        bucket2low=81,
+        bucket2hi=250,
+        bucket3low=600,
+        bucket3hi=800,
+        bucket4low=2001,
+        bucket4hi=6000,
+        bucket5low=6001,
+        bucket5hi=16000,
         url = 'http://localhost:8000/bounceit.mp3';
+        
+    function freqToIndex(frequency) {
+    	return Math.round(frequency/22050 * 1024);
+    }
+    
+    function numDots(num) {
+    	return Math.round(8*num/255);
+    }
 
     // Step 1 - Initialise the Audio Context
     // There can be only one!
@@ -20,7 +38,8 @@
         }
         audioElement = document.getElementById("player");
         analyser = context.createAnalyser();
-        analyser.smoothingTimeConstant = 0;
+//        analyser.smoothingTimeConstant = .5;
+        analyser.maxDecibels = 0;
         audioElement.addEventListener("canplay", function() {
             source = context.createMediaElementSource(audioElement);
             source.connect(analyser);
@@ -42,11 +61,42 @@
     	
     	var sum = 0;
     	
-    	for(var i = 0; i < frequencyData.length; i++){
-    		sum+=frequencyData[i];
-    		var index = Math.floor(i/interval);
-    		dataArray[index]+=frequencyData[i];
+//    	console.log(freqToIndex(bucket1low),freqToIndex(bucket1hi),freqToIndex(bucket2low),freqToIndex(bucket2hi),freqToIndex(bucket3low),freqToIndex(bucket3hi),freqToIndex(bucket4low),freqToIndex(bucket4hi),freqToIndex(bucket5low),freqToIndex(bucket5hi));
+    	
+    	for(var i = freqToIndex(bucket1low); i < freqToIndex(bucket1hi); i++){
+    		dataArray[0]+=frequencyData[i];
     	}
+    	dataArray[0]= numDots(Math.round(dataArray[0]/(freqToIndex(bucket1hi) - freqToIndex(bucket1low))));
+    	
+    	for(var i = freqToIndex(bucket2low); i < freqToIndex(bucket2hi); i++){
+    		dataArray[1]+=frequencyData[i];
+    	}
+    	dataArray[1]= numDots(Math.round(dataArray[1]/(freqToIndex(bucket2hi) - freqToIndex(bucket2low))));
+    	
+    	for(var i = freqToIndex(bucket3low); i < freqToIndex(bucket3hi); i++){
+    		dataArray[2]+=frequencyData[i];
+    	}
+    	dataArray[2]= numDots(Math.round(dataArray[2]/(freqToIndex(bucket3hi) - freqToIndex(bucket3low))));
+    	
+    	for(var i = freqToIndex(bucket4low); i < freqToIndex(bucket4hi); i++){
+    		dataArray[3]+=frequencyData[i];
+    	}
+    	dataArray[3]= numDots(Math.round(dataArray[3]/(freqToIndex(bucket4hi) - freqToIndex(bucket4low))));
+    	
+    	for(var i = freqToIndex(bucket5low); i < freqToIndex(bucket5hi); i++){
+    		dataArray[4]+=frequencyData[i];
+    	}
+    	dataArray[4]= numDots(Math.round(dataArray[4]/(freqToIndex(bucket5hi) - freqToIndex(bucket5low))));
+    	
+    	
+//    	for(var i = 0; i < frequencyData.length; i++){
+//    		sum+=frequencyData[i];
+//    		var index = Math.floor(i/interval);
+//    		dataArray[index]+=frequencyData[i];
+//    	}
+		for(var i = 0; i < 5; i++){
+			
+		}
     	console.log(dataArray);
     }
 
