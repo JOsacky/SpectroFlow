@@ -2,6 +2,9 @@
     var context, 
         soundSource, 
         soundBuffer,
+        analyser,
+        source,
+        audioElement,
         url = 'http://localhost:8000/bounceit.mp3';
 
     // Step 1 - Initialise the Audio Context
@@ -14,63 +17,29 @@
         } else {
             throw new Error('AudioContext not supported. :(');
         }
+        audioElement = document.getElementById("player");
+        analyser = context.createAnalyser();
+        audioElement.addEventListener("canplay", function() {
+            console.log("blahhhh");
+            source = context.createMediaElementSource(audioElement);
+            source.connect(analyser);
+            source.connect(context.destination);
+            setInterval(function(){
+            	update();
+                },5000);
+        });
     }
-
-    // Step 2: Load our Sound using XHR
-    function startSound() {
-        // Note: this loads asynchronously
-        var request = new XMLHttpRequest();
-        request.open("GET", url, true);
-        request.responseType = "arraybuffer";
-
-        // Our asynchronous callback
-        request.onload = function() {
-            var audioData = request.response;
-
-            audioGraph(audioData);
-
-
-        };
-
-        request.send();
+    
+    function update() {
+    	var frequencyData = new Uint8Array(analyser.frequencyBinCount);
+    	analyser.getByteFrequencyData(frequencyData);
+    	//for(var i =0; i < frequencyData.length; i++){
+    	console.log(frequencyData);
+    	//}
     }
-
-    // Finally: tell the source when to start
-    function playSound() {
-        // play the source now
-        soundSource.noteOn(context.currentTime);
-    }
-
-    function stopSound() {
-        // stop the source now
-        soundSource.noteOff(context.currentTime);
-    }
-
-    // Events for the play/stop bottons
-    document.querySelector('.play').addEventListener('click', startSound);
-    document.querySelector('.stop').addEventListener('click', stopSound);
-
-
-    // This is the code we are interested in
-    function audioGraph(audioData) {
-        // create a sound source
-        soundSource = context.createBufferSource();
-
-        // The Audio Context handles creating source buffers from raw binary
-        soundBuffer = context.createBuffer(audioData, true/* make mono */);
-      
-        // Add the buffered data to our object
-        soundSource.buffer = soundBuffer;
-
-        // Plug the cable from one thing to the other
-        soundSource.connect(context.destination);
-
-        // Finally
-        playSound(soundSource);
-    }
-
 
     init();
+
 
 
 }());
